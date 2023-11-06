@@ -15,6 +15,5 @@ public class Product
     public decimal? ProductPrice { get; set; }
     public int? ProductQuantity { get; set; }
     public string? SupplierInformation { get; set; }
-    public byte[]? ProductImage { get; set; }
     public DateTime? CreationDate { get; set; } 
 }

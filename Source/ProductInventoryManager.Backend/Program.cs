@@ -51,7 +51,6 @@ app.MapPut("/products/updateProduct/{id}", async (ProductInventoryManagerContext
     product.ProductPrice = updatedProduct.ProductPrice;
     product.ProductQuantity = updatedProduct.ProductQuantity;
     product.SupplierInformation = updatedProduct.SupplierInformation;
-    product.ProductImage = updatedProduct.ProductImage;
     product.CreationDate = updatedProduct.CreationDate;
 
     await context.SaveChangesAsync();
