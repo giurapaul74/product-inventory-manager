@@ -25,12 +25,17 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Set working directory
+        run: |
+          cd ${{ github.workspace }}
+          cd ./ProductInventoryManager.Backend
+        shell: bash
+
       - name: 'Resolve Project Dependencies Using Dotnet'
         working-directory: ./ProductInventoryManager.Backend
         shell: pwsh
         run: |
           pushd '${{ github.workspace }}'
-          pushd './ProductInventoryManager.Backend'
           dotnet build ProductInventoryManager.Backend.csproj --configuration Release --output ./output
           popd
 
