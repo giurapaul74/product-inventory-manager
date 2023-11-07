@@ -26,6 +26,7 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: 'Resolve Project Dependencies Using Dotnet'
+        working-directory: ./ProductInventoryManager.Backend
         shell: pwsh
         run: |
           pushd '${{ github.workspace }}'
