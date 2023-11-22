@@ -5,7 +5,17 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddHttpClient("MinimalApi", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7042/");
+    client.BaseAddress = new Uri("https://localhost:7042");
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.WithOrigins("*")
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
 });
 
 var app = builder.Build();
@@ -22,6 +32,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseCors("AllowAll");
 
 app.UseAuthorization();
 

@@ -1,0 +1,42 @@
+﻿@{
+}
+@model ProductSellStockViewModel
+
+<form>
+    <label for="quantity">Quantity to Sell:</label>
+    <input type="number" id="quantityToSell" name="quantityToSell" required />
+    <button type="submit" onclick="sellStock(@Model.ProductId)">Sell Stock</button>
+</form>
+
+<script>
+    function sellStock(productId) {
+        var quantityToSell = $('#quantityToSell').val();
+
+        // Make an AJAX request
+        $.ajax({
+            url: `/api/products/sellStock`,
+            method: 'PUT',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                productId: productId,
+                quantityToSell: quantityToSell
+            }),
+            success: function (response) {
+                if (response.success) {
+                    // Stock sold successfully, you can refresh the page or update the UI
+                    window.location.reload();
+                } else {
+                    // Handle the case where stock selling failed
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                // Handle AJAX request error
+                console.error('Error:', error);
+                alert('Failed to sell stock. Please try again.');
+            }
+        });
+        return false; // Prevent the default form submission
+    }
+</script>

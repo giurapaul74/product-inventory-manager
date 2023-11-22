@@ -1,0 +1,42 @@
+﻿@{
+}
+@model ProductAddStockViewModel
+
+<form>
+    <label for="quantity">Quantity to Add:</label>
+    <input type="number" id="quantityToAdd" name="quantityToAdd" required />
+    <button type="submit" onclick="addStock(@Model.ProductId)">Add Stock</button>
+</form>
+
+<script>
+    function addStock(productId) {
+        var quantityToAdd = $('#quantityToAdd').val();
+
+        // Make an AJAX request
+        $.ajax({
+            url: `/api/products/addStock`,
+            method: 'PUT',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                productId: productId,
+                quantityToAdd: quantityToAdd
+            }),
+            success: function (response) {
+                if (response.success) {
+                    // Stock added successfully, you can refresh the page or update the UI
+                    window.location.reload();
+                } else {
+                    // Handle the case where stock addition failed
+                    alert(response.message);
+                }
+            },
+            error: function (error) {
+                // Handle AJAX request error
+                console.error('Error:', error);
+                alert('Failed to add stock. Please try again.');
+            }
+        });
+        return false; // Prevent the default form submission
+    }
+</script>

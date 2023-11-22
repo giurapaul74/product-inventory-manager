@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "apis1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.ApiManagement/service/PimMinimalApi/apis/pim-api",
+      "type": "apis.azure"
+    },
+    "mssql1": {
+      "serviceConnectorResourceId": "",
+      "secretStore": "AzureAppSettings",
+      "type": "mssql.onprem",
+      "connectionId": "ConnectionStrings:DESKTOP-DEQHB5O:SQLEXPRESS",
+      "dynamicId": null
+    }
+  }
+}

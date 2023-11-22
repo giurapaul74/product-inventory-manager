@@ -7,6 +7,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ProductInventoryManagerContext>();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.WithOrigins("https://localhost:7042")
+               .AllowAnyHeader()
+               .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
@@ -21,7 +30,8 @@ app.UseHttpsRedirection();
 
 app.MapGet("/products", async (ProductInventoryManagerContext context) =>
 {
-    return await context.Products.ToListAsync();
+    var products = await context.Products.ToListAsync();
+    return Results.Json(products);
 });
 
 app.MapGet("/products/{id}", async (ProductInventoryManagerContext context, int id) =>
@@ -33,9 +43,19 @@ app.MapGet("/products/{id}", async (ProductInventoryManagerContext context, int 
 
 app.MapPost("/products/addProduct", async (ProductInventoryManagerContext context, Product product) =>
 {
-    context.Products.Add(product);
-    await context.SaveChangesAsync();
-    return Results.Ok(await context.Products.ToListAsync());
+    try
+    {
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+        var updatedProducts = await context.Products.ToListAsync();
+        return Results.Ok(updatedProducts);
+    }
+    catch (Exception ex)
+    {
+        // Log the exception for debugging purposes
+        Console.WriteLine($"Error adding product: {ex.Message}");
+        return Results.BadRequest("Failed to add the product.");
+    }
 });
 
 app.MapPut("/products/updateProduct/{id}", async (ProductInventoryManagerContext context, Product updatedProduct, int id) =>
@@ -44,6 +64,8 @@ app.MapPut("/products/updateProduct/{id}", async (ProductInventoryManagerContext
     if (product == null)
         return Results.NotFound($"The product with ID {id} could not be found.");
 
+    DateTime? originalCreationDate = product.CreationDate;
+
     product.ProductName = updatedProduct.ProductName;
     product.ProductDescription = updatedProduct.ProductDescription;
     product.ProductCategory = updatedProduct.ProductCategory;
@@ -51,7 +73,7 @@ app.MapPut("/products/updateProduct/{id}", async (ProductInventoryManagerContext
     product.ProductPrice = updatedProduct.ProductPrice;
     product.ProductQuantity = updatedProduct.ProductQuantity;
     product.SupplierInformation = updatedProduct.SupplierInformation;
-    product.CreationDate = updatedProduct.CreationDate;
+    product.CreationDate = originalCreationDate;
 
     await context.SaveChangesAsync();
 
@@ -70,7 +92,7 @@ app.MapDelete("/products/{id}", async (ProductInventoryManagerContext context, i
     return Results.Ok(await context.Products.ToListAsync());
 });
 
-app.MapPost("/products/sellStock/{id}", async (ProductInventoryManagerContext context, int id, int quantityToSell) => 
+app.MapPut("/products/sellStock/{id}", async (ProductInventoryManagerContext context, int id, int quantityToSell) => 
 {
     var product = await context.Products.FindAsync(id);
 
@@ -94,7 +116,7 @@ app.MapPost("/products/sellStock/{id}", async (ProductInventoryManagerContext co
     return Results.Ok($"Sale successful. Current {product.ProductName} stock: {product.ProductQuantity} items.");
 });
 
-app.MapPost("/products/addStock/{id}", async (ProductInventoryManagerContext context, int id, int quantityToAdd) =>
+app.MapPut("/products/addStock/{id}", async (ProductInventoryManagerContext context, int id, int quantityToAdd) =>
 {
     var product = await context.Products.FindAsync(id);
 

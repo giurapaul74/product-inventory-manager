@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@floating-ui/dom": "^1.5.3",
+    "tippy.js": "^6.3.7"
+  }
+}

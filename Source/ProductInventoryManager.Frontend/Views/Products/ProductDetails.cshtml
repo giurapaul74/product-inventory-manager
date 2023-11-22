@@ -1,0 +1,19 @@
+﻿@model ProductDetailsViewModel
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<h2>Product Details</h2>
+
+<div class="row">
+    <div class="col-md-8">
+        <h3>@Model.Product.ProductName</h3>
+        <p>@Model.Product.ProductDescription</p>
+        <p>Category: @Model.Product.ProductCategory</p>
+        <p>SKU: @Model.Product.ProductStockKeepingUnit</p>
+        <p>Price: @Model.Product.ProductPrice</p>
+        <p>Quantity: @Model.Product.ProductQuantity</p>
+        <p>Supplier Information: @Model.Product.SupplierInformation</p>
+        <p>Creation Date: @Model.Product.CreationDate?.ToString("yyyy-MM-dd HH:mm:ss")</p>
+    </div>
+</div>

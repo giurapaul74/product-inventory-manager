@@ -1,0 +1,155 @@
+﻿@model ProductListViewModel
+@{
+    ViewData["Title"] = "Products";
+}
+
+<h2>Product List</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Stock Keeping Unit</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Supplier Information</th>
+            <th>Creation Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model.Products)
+        {
+            <tr>
+                <td>@product.Id</td>
+                <td>@product.ProductName</td>
+                <td>@product.ProductDescription</td>
+                <td>@product.ProductCategory</td>
+                <td>@product.ProductStockKeepingUnit</td>
+                <td>@product.ProductPrice</td>
+                <td>@product.ProductQuantity</td>
+                <td>@product.SupplierInformation</td>
+                <td>@product.CreationDate?.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>
+                    <a class="btn btn-secondary" href="@Url.Action("ProductDetails", "Products", new { id = product.Id })">View Details</a>
+                    <a class="btn btn-secondary" href="@Url.Action("UpdateProductPage", "Products", new { id = product.Id })">Edit Product</a>
+                    <button class="btn btn-secondary" onclick="confirmDelete(@product.Id)">Delete Product</button>
+                    <a class="btn btn-secondary" href="#" onclick="openAddStockModal(@product.Id)">Add Stock</a>
+                    <a class="btn btn-secondary" href="#" onclick="openSellStockModal(@product.Id)">Sell Stock</a>
+
+                    <!-- Add Stock Modal -->
+                    <div class="modal fade" id="addStockModal-@product.Id" tabindex="-1" role="dialog" aria-labelledby="addStockModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="addStockModalLabel">Add Stock</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    @{
+                                        var addStockViewModel = new ProductAddStockViewModel
+                                        {
+                                            ProductId = product.Id
+                                        };
+
+                                        await Html.RenderPartialAsync("AddStockPartial", addStockViewModel);
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sell Stock Modal -->
+                    <div class="modal fade" id="sellStockModal-@product.Id" tabindex="-1" role="dialog" aria-labelledby="sellStockModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="sellStockModalLabel">Sell Stock</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    @{
+                                        var sellStockViewModel = new ProductSellStockViewModel
+                                        {
+                                            ProductId = product.Id
+                                        };
+
+                                        await Html.RenderPartialAsync("SellStockPartial", sellStockViewModel);
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Button for adding products -->
+<div style="margin-top: 20px;">
+    <a class="btn btn-primary" href="@Url.Action("AddProduct", "Products")">Add Product</a>
+</div>
+
+<!-- Bootstrap and jQuery JS -->
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JavaScript function to handle DELETE request -->
+<script>
+    function confirmDelete(productId) {
+        var confirmDelete = confirm("Are you sure you want to delete this product?");
+        if (confirmDelete) {
+            // Call the deleteProduct function or redirect to delete endpoint
+            deleteProduct(productId);
+        }
+    }
+
+    function deleteProduct(productId) {
+        // Send a DELETE request using fetch API
+        fetch(`/api/products/deleteProduct/${productId}`, {
+            method: 'DELETE'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to delete product. Status: ${response.status}`);
+                }
+                // Handle success, e.g., refresh the page or update the UI
+                location.reload();
+            })
+            .catch(error => {
+                // Handle errors, e.g., show an alert
+                alert(error.message);
+            });
+    }
+
+    function openAddStockModal(productId) {
+        var modalSelector = '#addStockModal-' + productId;  // Ensure proper concatenation
+        var modal = document.querySelector(modalSelector); // Fix: use modalSelector
+
+        if (modal) {
+            $(modal).modal('show');
+        } else {
+            console.error('Modal not found:', modalSelector);
+        }
+    }
+
+    function openSellStockModal(productId) {
+        var modalSelector = '#sellStockModal-' + productId;  // Ensure proper concatenation
+        var modal = document.querySelector(modalSelector); // Fix: use modalSelector
+
+        if (modal) {
+            $(modal).modal('show');
+        } else {
+            console.error('Modal not found:', modalSelector);
+        }
+    }
+</script>
