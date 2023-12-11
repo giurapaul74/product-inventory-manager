@@ -17,6 +17,8 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddScoped<IBackendService, BackendService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
