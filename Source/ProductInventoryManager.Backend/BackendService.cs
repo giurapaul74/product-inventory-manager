@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using ProductInventoryManager.Backend.Exceptions;
 
 namespace ProductInventoryManager.Backend
@@ -83,6 +85,11 @@ namespace ProductInventoryManager.Backend
             if (product.ProductQuantity < quantityToSell)
             {
                 throw new BadRequestException("Not enough quantity in stock to fulfill the sale.");
+            }
+
+            if (quantityToSell <= 0)
+            {
+                throw new BadRequestException("Selected quantity to sell cannot be less or equal to 0.");
             }
 
             // Deduct the sold quantity from the product's stock

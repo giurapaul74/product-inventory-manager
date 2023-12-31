@@ -30,109 +30,54 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/products", async (ProductInventoryManagerContext context) =>
+app.MapGet("/products", async (IBackendService context) =>
 {
-    var products = await context.Products.ToListAsync();
+    var products = await context.GetProductsAsync();
     return Results.Json(products);
 });
 
-app.MapGet("/products/{id}", async (ProductInventoryManagerContext context, int id) =>
+app.MapGet("/products/{id}", async (IBackendService context, int id) =>
 {
-    return await context.Products.FindAsync(id) is Product product ?
+    return await context.GetProductByIdAsync(id) is Product product ?
         Results.Ok(product) :
         Results.NotFound("This product doesn't exist.");
 });
 
-app.MapPost("/products/addProduct", async (ProductInventoryManagerContext context, Product product) =>
+app.MapPost("/products/addProduct", async (IBackendService context, Product product) =>
 {
-    try
-    {
-        context.Products.Add(product);
-        await context.SaveChangesAsync();
-        var updatedProducts = await context.Products.ToListAsync();
-        return Results.Ok(updatedProducts);
-    }
-    catch (Exception ex)
-    {
-        // Log the exception for debugging purposes
-        Console.WriteLine($"Error adding product: {ex.Message}");
-        return Results.BadRequest("Failed to add the product.");
-    }
+    await context.AddProductAsync(product);
+
+    return Results.Ok(await context.GetProductsAsync());
 });
 
-app.MapPut("/products/updateProduct/{id}", async (ProductInventoryManagerContext context, Product updatedProduct, int id) =>
+app.MapPut("/products/updateProduct/{id}", async (IBackendService context, Product updatedProduct, int id) =>
 {
-    var product = await context.Products.FindAsync(id);
-    if (product == null)
-        return Results.NotFound($"The product with ID {id} could not be found.");
+    await context.UpdateProductAsync(id, updatedProduct);
 
-    DateTime? originalCreationDate = product.CreationDate;
-
-    product.ProductName = updatedProduct.ProductName;
-    product.ProductDescription = updatedProduct.ProductDescription;
-    product.ProductCategory = updatedProduct.ProductCategory;
-    product.ProductStockKeepingUnit = updatedProduct.ProductStockKeepingUnit;
-    product.ProductPrice = updatedProduct.ProductPrice;
-    product.ProductQuantity = updatedProduct.ProductQuantity;
-    product.SupplierInformation = updatedProduct.SupplierInformation;
-    product.CreationDate = originalCreationDate;
-
-    await context.SaveChangesAsync();
-
-    return Results.Ok(await context.Products.ToListAsync());
+    return Results.Ok(await context.GetProductsAsync());
 });
 
-app.MapDelete("/products/{id}", async (ProductInventoryManagerContext context, int id) =>
+app.MapDelete("/products/{id}", async (IBackendService context, int id) =>
 {
-    var product = await context.Products.FindAsync(id);
-    if (product == null)
-        return Results.NotFound($"The product with ID {id} could not be found.");
+    await context.DeleteProductAsync(id);
 
-    context.Products.Remove(product);
-    await context.SaveChangesAsync();
-
-    return Results.Ok(await context.Products.ToListAsync());
+    return Results.Ok(await context.GetProductsAsync());
 });
 
-app.MapPut("/products/sellStock/{id}", async (ProductInventoryManagerContext context, int id, int quantityToSell) => 
+app.MapPut("/products/sellStock/{id}", async (IBackendService context, int id, int quantityToSell) => 
 {
-    var product = await context.Products.FindAsync(id);
+    await context.SellStockAsync(id, quantityToSell);
 
-    if (product == null)
-    {
-        return Results.NotFound($"The product with ID {id} could not be found.");
-    }
-
-    // Check if there is enough quantity in stock to sell
-    if (product.ProductQuantity < quantityToSell)
-    {
-        return Results.BadRequest("Not enough quantity in stock to fulfill the sale.");
-    }
-
-    // Deduct the sold quantity from the product's stock
-    product.ProductQuantity -= quantityToSell;
-
-    // Save the updated product information to the database
-    await context.SaveChangesAsync();
-
-    return Results.Ok($"Sale successful. Current {product.ProductName} stock: {product.ProductQuantity} items.");
+    //return Results.Ok($"Sale successful. Current {product.ProductName} stock: {product.ProductQuantity} items.");
+    return Results.Ok(await context.GetProductsAsync());
 });
 
-app.MapPut("/products/addStock/{id}", async (ProductInventoryManagerContext context, int id, int quantityToAdd) =>
+app.MapPut("/products/addStock/{id}", async (IBackendService context, int id, int quantityToAdd) =>
 {
-    var product = await context.Products.FindAsync(id);
+    await context.AddStockAsync(id, quantityToAdd);
 
-    if (product == null)
-        return Results.NotFound($"The product with ID {id} could not be found.");
-
-    if (quantityToAdd <= 0)
-        return Results.BadRequest("Sorry, you must provide a positive quantity number.");
-
-    product.ProductQuantity += quantityToAdd;
-
-    await context.SaveChangesAsync();
-
-    return Results.Ok($"Process successful. {quantityToAdd} item/s added to {product.ProductName} stock.");
+    //return Results.Ok($"Process successful. {quantityToAdd} item/s added to {product.ProductName} stock.");
+    return Results.Ok(await context.GetProductsAsync());
 });
 
 app.Run();
